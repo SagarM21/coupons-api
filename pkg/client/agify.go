@@ -5,20 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"e-commerce/pkg/models"
 )
-
-
-type AgifyResponse struct {
-    Count int `json:"count"`
-    Name string `json:"name"`
-    Age int `json:"age"`
-}
 
 var httpClient = &http.Client{
     Timeout:  10 * time.Second,
 }
 
-func GetEstimatedAge (name string ) (*AgifyResponse, error){
+func GetEstimatedAge (name string ) (*models.AgeEstimate, error){
     url := fmt.Sprintf("https://api.agify.io?name=%s", name)
 
     resp, err := httpClient.Get(url)
@@ -27,7 +22,7 @@ func GetEstimatedAge (name string ) (*AgifyResponse, error){
     }
     defer resp.Body.Close()
 
-    var result AgifyResponse
+    var result models.AgeEstimate
     if err := json.NewDecoder(resp.Body).Decode(&result) ; err != nil {
         return nil, err
     }

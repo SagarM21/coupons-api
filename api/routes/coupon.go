@@ -170,12 +170,7 @@ func (h *CouponHandler) GetEstimateAge (c *gin.Context){
 		return 
 	}
 	
-	//  h.DB.SaveAgeEstimate(models.AgeEstimate(*resp))
-	 err = h.DB.SaveAgeEstimate(models.AgeEstimate{
-		Name: resp.Name,
-		Count: resp.Count,
-		Age: resp.Age,
-	 })
+	 err = h.DB.SaveAgeEstimate(*resp)
 	 if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error":"Failed to save age"})
 		return
