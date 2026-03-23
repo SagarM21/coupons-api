@@ -10,6 +10,7 @@ const (
 	CouponTypeBxGy        CouponType = "bxgy"
 )
 
+
 type Coupon struct {
 	ID        string     `json:"id" cql:"id"`
 	Type      CouponType `json:"type" cql:"type"`

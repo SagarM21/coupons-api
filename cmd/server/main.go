@@ -41,7 +41,7 @@ func main() {
 	}
 
 	couponService := &services.CouponService{DB: database}
-	couponHandler := &routes.CouponHandler{Service: couponService}
+	couponHandler := &routes.CouponHandler{Service: couponService, DB: database}
 
 	r := gin.Default()
 

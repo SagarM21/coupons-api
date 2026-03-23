@@ -66,6 +66,7 @@ func CreateKeyspace(cfg config.Database) error {
 	}
 	defer session.Close()
 
+
 	query := fmt.Sprintf(
 		`CREATE KEYSPACE IF NOT EXISTS %s WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}`,
 		cfg.Keyspace,
@@ -81,6 +82,12 @@ func (d *DB) CreateTables() error {
 			details TEXT,
 			created_at TIMESTAMP,
 			expires_at TIMESTAMP
+		)`,
+
+		`CREATE TABLE IF NOT EXISTS age_estimates (
+			name TEXT PRIMARY KEY,
+			age INT,
+			count INT
 		)`,
 	}
 

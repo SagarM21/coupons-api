@@ -3,6 +3,8 @@ package routes
 import (
 	"net/http"
 
+	"e-commerce/pkg/client"
+	"e-commerce/pkg/db"
 	"e-commerce/pkg/models"
 	"e-commerce/pkg/services"
 
@@ -11,16 +13,18 @@ import (
 
 type CouponHandler struct {
 	Service *services.CouponService
+	DB *db.DB
 }
 
 func RegisterCouponRoutes(r *gin.Engine, handler *CouponHandler) {
-	r.POST("/coupons", handler.CreateCoupon)
-	r.GET("/coupons", handler.GetAllCoupons)
-	r.GET("/coupons/:id", handler.GetCoupon)
-	r.PUT("/coupons/:id", handler.UpdateCoupon)
-	r.DELETE("/coupons/:id", handler.DeleteCoupon)
-	r.POST("/applicable-coupons", handler.GetApplicableCoupons)
-	r.POST("/apply-coupon/:id", handler.ApplyCoupon)
+	r.POST("/coupons", handler.CreateCoupon) // admin
+	r.GET("/coupons", handler.GetAllCoupons) // customer, admin
+	r.GET("/coupons/:id", handler.GetCoupon) // customer, admin
+	r.PUT("/coupons/:id", handler.UpdateCoupon) // admin
+	r.DELETE("/coupons/:id", handler.DeleteCoupon) // admin
+	r.POST("/applicable-coupons", handler.GetApplicableCoupons) // customer
+	r.POST("/apply-coupon/:id", handler.ApplyCoupon) // customer
+	r.GET("/age", handler.GetEstimateAge)
 }
 
 func (h *CouponHandler) CreateCoupon(c *gin.Context) {
@@ -145,3 +149,38 @@ func (h *CouponHandler) ApplyCoupon(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"updated_cart": updatedCart})
 }
+
+
+func (h *CouponHandler) GetEstimateAge (c *gin.Context){
+	name := c.Query("name")
+	if name == ""{
+		c.JSON(http.StatusBadRequest, gin.H{"error":"name is required"})
+		return
+	}
+
+	cached, err := h.DB.GetAgeEstimate(name)
+	if err == nil && cached != nil {
+		c.JSON(200, cached)
+		return
+	}
+
+	resp, err := client.GetEstimatedAge(name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error" : "agify failed"})
+		return 
+	}
+	
+	//  h.DB.SaveAgeEstimate(models.AgeEstimate(*resp))
+	 err = h.DB.SaveAgeEstimate(models.AgeEstimate{
+		Name: resp.Name,
+		Count: resp.Count,
+		Age: resp.Age,
+	 })
+	 if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"Failed to save age"})
+		return
+	 }
+
+	
+	c.JSON(http.StatusOK, resp)
+ }
